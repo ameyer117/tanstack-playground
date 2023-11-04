@@ -5,12 +5,24 @@ import {
     flexRender,
     getPaginationRowModel,
     getSortedRowModel,
-    SortDirection, getFilteredRowModel
+    SortDirection, getFilteredRowModel, createColumnHelper
 } from '@tanstack/react-table'
 import mData from '../MOCK_DATA.json'
 import { DateTime } from "luxon";
 
+type IPerson = {
+    id: number
+    first_name: string
+    last_name: string
+    email: string
+    gender: string
+    dob: string
+}
+
+const columnHelper = createColumnHelper<IPerson>();
+
 interface BasicTableProps {
+
 }
 
 const BasicTable: React.FC<BasicTableProps> = () => {
@@ -32,30 +44,27 @@ const BasicTable: React.FC<BasicTableProps> = () => {
         onSortingChange: setSorting,
         onGlobalFilterChange: setFiltering,
         columns: [
-            {
+            columnHelper.accessor("id", {
                 header: "ID",
-                accessorKey: "id",
-            },
-            {
+            }),
+            columnHelper.accessor((row) => `${row.first_name} ${row.last_name}`, {
                 header: "Name",
-                accessorFn: (row) => `${row.first_name} ${row.last_name}`,
-                // accessorKey: "first_name",
-                // cell: info => `${info.getValue()} ${info.row.original.last_name}`
-            },
-            {
+            }),
+            columnHelper.accessor("email", {
                 header: "Email",
-                accessorKey: "email",
-            },
-            {
+            }),
+            columnHelper.accessor("gender", {
                 header: "Gender",
-                accessorKey: "dob"
-            },
-            {
-                header: "DOB",
-                accessorFn: (row) => DateTime.fromISO(row.dob).toLocaleString(DateTime.DATE_MED),
-                // accessorKey: "dob",
-                // cell: info => DateTime.fromISO(info.getValue()).toLocaleString(DateTime.DATE_MED)
-            }
+            }),
+            columnHelper.accessor("dob", {
+                header: "",
+                enableSorting: false,
+                cell: info => (
+                    <div style={{padding: 16, backgroundColor: "steelblue", color: "white"}}>
+                        {DateTime.fromISO(info.getValue()).toLocaleString(DateTime.DATE_MED)}
+                    </div>
+                )
+            })
         ],
     });
 
@@ -75,9 +84,7 @@ const BasicTable: React.FC<BasicTableProps> = () => {
                                     &nbsp;
                                     &nbsp;
                                     &nbsp;
-                                    {
-                                        {asc: '🔼', desc: '🔽'}[header.column.getIsSorted() as SortDirection] || '↕️'
-                                    }
+                                    {header.column.getCanSort() ? ({asc: '🔼', desc: '🔽'}[header.column.getIsSorted() as SortDirection] || '↕️') : null}
                                 </th>
                             ))}
                         </tr>
